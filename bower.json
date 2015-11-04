@@ -2,25 +2,35 @@
   "name": "graphene-doc",
   "version": "1.0.3",
   "authors": [
-    "Anonymous <anonymous@example.com>"
+    "Marco Magnetti <marcomagnetti@gmail.com>"
   ],
-  "description": "An element providing a solution to no problem in particular.",
+  "description": "Graphene documentation client for Polymer",
   "keywords": [
     "web-component",
     "polymer",
-    "seed"
+    "seed",
+    "graphene",
+    "client",
+    "documentation",
+    "doc"
   ],
   "main": "graphene-doc.html",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "homepage": "https://github.com/marcomag89/seed-element/",
+  "homepage": "https://github.com/marcomag89/graphene-doc/",
   "ignore": [
     "/.*",
-    "/test/"
+    "/test/",
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
-  }
+  },
+  "moduleType": []
 }
