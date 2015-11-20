@@ -19,12 +19,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     'use strict';
     var appName = apiSettings.server.appName;
 
-    var sCache = localStorage.getItem('graphene-doc (' + appName + ')');
-    var cache = sCache !== null ? JSON.parse(sCache) : {};
+    var sCache  = localStorage.getItem('graphene-doc ('+appName+')');
+    var cache  = sCache !== null ? JSON.parse(sCache):{};
 
-    function saveDocCache(action, doc) {
+    function saveDocCache (action,doc){
       cache[action] = doc;
-      localStorage.setItem('graphene-doc (' + appName + ')', JSON.stringify(cache));
+      localStorage.setItem('graphene-doc ('+appName+')',JSON.stringify(cache));
     }
 
     Polymer({
@@ -42,20 +42,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _onActionNameChange : function(newName){
-        if (!(!!cache[newName])) {
-          this._client.gFetch('/system/doc/?action=' + this.actionName)
-                  .then(function (response) {
-                    this.doc = response.DocAction;
-                    this.fire('doc-update', this.doc);
-                    saveDocCache(newName, this.doc);
-                  }.bind(this))
-                  .catch(function (err) {
-                    this.err = err;
-                    console.error(err);
-                  }.bind(this))
-        } else {
+        if(!(!!cache[newName])){
+          this._client.gFetch('/system/doc/?action='+this.actionName)
+            .then(function(response){
+              this.doc = response.DocAction;
+              this.fire('doc-update',this.doc);
+              saveDocCache(newName,this.doc);
+            }.bind(this))
+            .catch(function(err){
+              this.err = err;
+              console.error(err);
+            }.bind(this))
+        }else{
           this.doc = cache[newName];
-          this.fire('doc-update', this.doc);
+          this.fire('doc-update',this.doc);
         }
       },
 
