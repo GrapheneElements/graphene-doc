@@ -43,7 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _onActionNameChange : function(newName){
         if(!(!!cache[newName])){
-          this._client.gFetch('/system/doc/?action='+this.actionName)
+          this._client.gFetch('/system/doc/?action=' + this.actionName + '&detail=' + this._getDetailFlag())
             .then(function(response){
               this.doc = response.DocAction;
               this.fire('doc-update',this.doc);
@@ -63,9 +63,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return this.doc.interface;
       },
 
+      _getDetailFlag: function () {
+        return this.detail ? 1 : 0;
+      },
+
       properties: {
         actionName : {type:String, observer:'_onActionNameChange'},
         doc        : Object,
+        detail: {type: Boolean, value: false},
         _client    : Object
       }
     });
