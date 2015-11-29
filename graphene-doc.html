@@ -34,12 +34,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _onClientReady: function () {
-        this._client = this._getClient();
         this.fire('doc-ready');
       },
 
       _getClient: function () {
-        console.log('client: ', this.$$('[role = client]'));
         return this.$$('[role = client]');
       },
       /**
@@ -49,23 +47,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.actionName = action;
       },
 
-      _onActionNameChange : function(newName){
-        if(!(!!cache[newName])){
-          this._client.gFetch('/system/doc/?action=' + this.actionName + '&detail=' + this._getDetailFlag())
-            .then(function(response){
-              this.doc = response.DocAction;
-              this.fire('doc-update',this.doc);
-              saveDocCache(newName,this.doc);
-            }.bind(this))
-            .catch(function(err){
-              this.err = err;
-              console.error(err);
-            }.bind(this))
-        }else{
-          this.doc = cache[newName];
-          this.fire('doc-update',this.doc);
-        }
+        _onActionNameChange: function () {
+            this.fetchDoc();
       },
+
+        fetchDoc: function () {
+            if (!!this._getClient() && !!this.actionName) {
+                if (!(!!cache[this.actionName])) {
+                    this._getClient().gFetch('/system/doc/?action=' + this.actionName + '&detail=' + this._getDetailFlag())
+                            .then(function (response) {
+                                this.doc = response.DocAction;
+                                this.fire('doc-update', this.doc);
+                                saveDocCache(this.actionName, this.doc);
+                            }.bind(this))
+                            .catch(function (err) {
+                                this.err = err;
+                                console.error(err);
+                            }.bind(this))
+                } else {
+                    this.doc = cache[this.actionName];
+                    this.fire('doc-update', this.doc);
+                }
+            } else {
+                console.log('waiting for more informations\nClient: ', this._getClient(), '\nAction name: ', this.actionName)
+            }
+        },
 
       getInterface:function(){
         return this.doc.interface;
@@ -79,7 +85,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         actionName : {type:String, observer:'_onActionNameChange'},
         doc        : Object,
         detail: {type: Boolean, value: false},
-        _client    : Object
       }
     });
   })();
