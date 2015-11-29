@@ -12,7 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../graphene-client/graphene-client.html">
 <dom-module id="graphene-doc">
   <template>
-    <graphene-client role="client"></graphene-client>
+    <graphene-client role="client" on-client-ready="_onClientReady"></graphene-client>
   </template>
   <script>
   (function() {
@@ -30,10 +30,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'graphene-doc',
 
-      attached:function(){
-        this._client = this.$$('[role = client]');
+      attached: function () {
       },
 
+      _onClientReady: function () {
+        this._client = this._getClient();
+        this.fire('doc-ready');
+      },
+
+      _getClient: function () {
+        console.log('client: ', this.$$('[role = client]'));
+        return this.$$('[role = client]');
+      },
       /**
        * sets the action name
        * */
