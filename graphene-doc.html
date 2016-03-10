@@ -11,82 +11,98 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../graphene-client/graphene-client.html">
 <dom-module id="graphene-doc">
-  <template>
-    <graphene-client role="client" on-client-ready="_onClientReady"></graphene-client>
-  </template>
-  <script>
-  (function() {
-    'use strict';
-    var appName = apiSettings.server.appName;
+    <template>
+        <graphene-client id="client"></graphene-client>
+    </template>
+    <script>
+        (function() {
+            'use strict';
 
-    var sCache  = localStorage.getItem('graphene-doc ('+appName+')');
-    var cache  = sCache !== null ? JSON.parse(sCache):{};
+            Polymer({
+                is: 'graphene-doc',
 
-    function saveDocCache (action,doc){
-      cache[action] = doc;
-      localStorage.setItem('graphene-doc ('+appName+')',JSON.stringify(cache));
-    }
+                go: function(query) {
+                    if (query !== null) {
+                        this.$.client.fetch(query, null, null, null, true)
+                                .then(this._onResponse.bind(this))
+                        //.catch(this._onError.bind(this))
+                    }
+                },
 
-    Polymer({
-      is: 'graphene-doc',
+                getInterface: function() {
+                    return this.doc.interface;
+                },
 
-      attached: function () {
-      },
-
-      _onClientReady: function () {
-        this.fire('doc-ready');
-      },
-
-      _getClient: function () {
-        return this.$$('[role = client]');
-      },
-      /**
-       * sets the action name
-       * */
-      setActionName:function(action){
-        this.actionName = action;
-      },
-
-        _onActionNameChange: function () {
-            this.fetchDoc();
-      },
-
-        fetchDoc: function () {
-            if (!!this._getClient() && !!this.actionName) {
-                if (!(!!cache[this.actionName])) {
-                    this._getClient().gFetch('/system/doc/?action=' + this.actionName + '&detail=' + this._getDetailFlag())
-                            .then(function (response) {
-                                this.doc = response.DocAction;
-                                this.fire('doc-update', this.doc);
-                                saveDocCache(this.actionName, this.doc);
-                            }.bind(this))
-                            .catch(function (err) {
-                                this.err = err;
-                                console.error(err);
-                            }.bind(this))
-                } else {
-                    this.doc = cache[this.actionName];
+                _onResponse: function(response) {
+                    this.set('doc', response);
                     this.fire('doc-update', this.doc);
+                    console.log(this.doc);
+                },
+
+                _onError: function(err) {
+                    this.err = err;
+                    console.error(err);
+                },
+
+                _queryChanged: function(query, auto) {
+                    //this.set('doc', null);
+                    this.fire('doc-invalidate');
+                    if (auto && query) {
+                        this.go(query)
+                    }
+                },
+
+                _getQuery: function(queryBase, detail, actionName) {
+                    if (actionName && queryBase) {
+                        return queryBase + '?action=' + actionName + '&detail=' + (detail ? 1 : 0);
+                    } else {
+                        return null;
+                    }
+                },
+
+                _getRequestProto: function(e) {
+                    try {
+                        return this._clearObj(e.base.DocAction[0]['request-data']);
+                    } catch (ex) {
+                        return {}
+                    }
+                },
+
+                _getResponseProto: function(e) {
+                    try {
+                        return this._clearObj(e.base.DocAction[0]['response-data']);
+                    } catch (ex) {
+                        return {}
+                    }
+                },
+
+                _clearObj: function(obj) {
+                    for (var key in obj) {
+                        if (typeof obj[key] === 'string') {
+                            obj[key] = null;
+                        } else if (typeof obj[key] == 'object') {
+                            obj[key] = this._clearObj(obj[key]);
+                        }
+                    }
+                    return obj;
+                },
+
+
+                observers: [
+                    '_queryChanged(query, auto)'
+                ],
+
+                properties: {
+                    query:         {type: String, computed: '_getQuery(queryBase, detail, actionName)'},
+                    requestProto:  {type: Object, computed: '_getRequestProto(doc.*)', notify: true},
+                    responseProto: {type: Object, computed: '_getResponseProto(doc.*)', notify: true},
+                    doc:           {type: Object, readonly: true, notify: true},
+                    actionName:    {type: String, value: null},
+                    auto:          {type: Boolean, value: true},
+                    detail:        {type: Boolean, value: true},
+                    queryBase:     {type: String, value: '/system/doc/'}
                 }
-            } else {
-                console.log('waiting for more informations\nClient: ', this._getClient(), '\nAction name: ', this.actionName)
-            }
-        },
-
-      getInterface:function(){
-        return this.doc.interface;
-      },
-
-      _getDetailFlag: function () {
-        return this.detail ? 1 : 0;
-      },
-
-      properties: {
-        actionName : {type:String, observer:'_onActionNameChange'},
-        doc        : Object,
-        detail: {type: Boolean, value: false},
-      }
-    });
-  })();
-  </script>
+            });
+        })();
+    </script>
 </dom-module>
