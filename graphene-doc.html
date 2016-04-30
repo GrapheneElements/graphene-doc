@@ -10,98 +10,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../graphene-client/graphene-client.html">
+<script src="graphene-doc-behavior.js"></script>
 <dom-module id="graphene-doc">
-    <template>
-        <graphene-client id="client"></graphene-client>
-    </template>
+    <template></template>
     <script>
         (function() {
             'use strict';
 
             Polymer({
-                is: 'graphene-doc',
-
-                go: function(query) {
-                    if (query !== null) {
-                        this.$.client.fetch(query, null, null, null, true)
-                                .then(this._onResponse.bind(this))
-                        //.catch(this._onError.bind(this))
-                    }
-                },
-
-                getInterface: function() {
-                    return this.doc.interface;
-                },
-
-                _onResponse: function(response) {
-                    this.set('doc', response);
-                    this.fire('doc-update', this.doc);
-                    console.log(this.doc);
-                },
-
-                _onError: function(err) {
-                    this.err = err;
-                    console.error(err);
-                },
-
-                _queryChanged: function(query, auto) {
-                    //this.set('doc', null);
-                    this.fire('doc-invalidate');
-                    if (auto && query) {
-                        this.go(query)
-                    }
-                },
-
-                _getQuery: function(queryBase, detail, actionName) {
-                    if (actionName && queryBase) {
-                        return queryBase + '?action=' + actionName + '&detail=' + (detail ? 1 : 0);
-                    } else {
-                        return null;
-                    }
-                },
-
-                _getRequestProto: function(e) {
-                    try {
-                        return this._clearObj(e.base.DocAction[0]['request-data']);
-                    } catch (ex) {
-                        return {}
-                    }
-                },
-
-                _getResponseProto: function(e) {
-                    try {
-                        return this._clearObj(e.base.DocAction[0]['response-data']);
-                    } catch (ex) {
-                        return {}
-                    }
-                },
-
-                _clearObj: function(obj) {
-                    for (var key in obj) {
-                        if (typeof obj[key] === 'string') {
-                            obj[key] = null;
-                        } else if (typeof obj[key] == 'object') {
-                            obj[key] = this._clearObj(obj[key]);
-                        }
-                    }
-                    return obj;
-                },
-
-
-                observers: [
-                    '_queryChanged(query, auto)'
-                ],
-
-                properties: {
-                    query:         {type: String, computed: '_getQuery(queryBase, detail, actionName)'},
-                    requestProto:  {type: Object, computed: '_getRequestProto(doc.*)', notify: true},
-                    responseProto: {type: Object, computed: '_getResponseProto(doc.*)', notify: true},
-                    doc:           {type: Object, readonly: true, notify: true},
-                    actionName:    {type: String, value: null},
-                    auto:          {type: Boolean, value: true},
-                    detail:        {type: Boolean, value: true},
-                    queryBase:     {type: String, value: '/system/doc/'}
-                }
+                is:        'graphene-doc',
+                behaviors: [window.Graphene.behaviors.doc]
             });
         })();
     </script>
